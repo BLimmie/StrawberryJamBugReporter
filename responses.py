@@ -1,5 +1,6 @@
 import os
 
+import discord
 from discord import ui, SelectOption, InputTextStyle, Interaction, Embed
 from github import Github
 
@@ -30,9 +31,10 @@ def send_to_github(label, issue_title, issue_desc, issue_links):
 
 
 class ReportModal(ui.Modal):
-    def __init__(self, label, *args, **kwargs):
+    def __init__(self, label, user: discord.User, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.label = label
+        self.user = user
         self.add_item(ui.InputText(label="Provide a quick summary of the issue", max_length=100, required=True))
         self.add_item(ui.InputText(label="Describe the issue in more detail", style=InputTextStyle.long, required=True))
         self.add_item(
@@ -49,6 +51,7 @@ class ReportModal(ui.Modal):
         embed.add_field(name="Issue Title", value=issue_title, inline=False)
         embed.add_field(name="Issue Description", value=issue_desc, inline=False)
         embed.add_field(name="Links", value=issue_links, inline=False)
+        embed.add_field(name="Reporter", value=f"{self.user.name}#{self.user.discriminator}", inline=False)
         embed.add_field(name="Issue URL", value=url, inline=False)
         await interaction.response.send_message(embeds=[embed])
 
@@ -84,9 +87,10 @@ class LabelView(ui.View):
             )
         ]
     )
-    async def select_callback(self, select, interaction):
+    async def select_callback(self, select, interaction: discord.Interaction):
         label = select.values[0]
-        await interaction.response.send_modal(ReportModal(label, title=f"{label} Issue Report"))
+        user = interaction.user
+        await interaction.response.send_modal(ReportModal(label, user, title=f"{label} Issue Report"))
         await self.message.delete()
 
     async def on_timeout(self) -> None:
