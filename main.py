@@ -11,7 +11,9 @@ async def on_ready():
 
 
 @bot.slash_command(name="report_issue", description="Report an issue")
-async def report(ctx):
+async def report(ctx: discord.ApplicationContext):
+    if ctx.channel_id != 1069022322960371762:
+        return
     await ctx.respond(view=LabelView())
 
 
