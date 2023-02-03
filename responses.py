@@ -19,12 +19,12 @@ color_map = {
 }
 
 
-def send_to_github(label, issue_title, issue_desc, issue_links):
+def send_to_github(label, issue_title, issue_desc, issue_links, user):
     git_token = os.environ["GIT_LOGIN"]
     g = Github(git_token)
     repo = g.get_repo("StrawberryJam2021/StrawberryJamIssues")
     git_label = repo.get_label(label)
-    desc = issue_desc + "\n\n" + "Links:\n" + issue_links
+    desc = issue_desc + "\n\n" + "Links:\n" + issue_links + "\n\nContact:\n" + user
     issue = repo.create_issue(issue_title, body=desc, labels=[git_label])
     url = issue.html_url
     return url
@@ -46,12 +46,13 @@ class ReportModal(ui.Modal):
         issue_links = self.children[2].value
         if not issue_links:
             issue_links = "<None>"
-        url = send_to_github(self.label, issue_title, issue_desc, issue_links)
+        user = f"{self.user.name}#{self.user.discriminator}"
+        url = send_to_github(self.label, issue_title, issue_desc, issue_links, user)
         embed = Embed(title=f"{self.label} Issue Reported", color=color_map[self.label])
         embed.add_field(name="Issue Title", value=issue_title, inline=False)
         embed.add_field(name="Issue Description", value=issue_desc, inline=False)
         embed.add_field(name="Links", value=issue_links, inline=False)
-        embed.add_field(name="Reporter", value=f"{self.user.name}#{self.user.discriminator}", inline=False)
+        embed.add_field(name="Reporter", value=user, inline=False)
         embed.add_field(name="Issue URL", value=url, inline=False)
         await interaction.response.send_message(embeds=[embed])
 
