@@ -87,3 +87,7 @@ class LabelView(ui.View):
     async def select_callback(self, select, interaction):
         label = select.values[0]
         await interaction.response.send_modal(ReportModal(label, title=f"{label} Issue Report"))
+        await self.message.delete()
+
+    async def on_timeout(self) -> None:
+        await self.message.delete()
